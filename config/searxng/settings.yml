@@ -1,0 +1,19 @@
+use:
+  - name: general
+    engine: google
+  - name: general
+    engine: duckduckgo
+  - name: general
+    engine: bing
+  - name: general
+    engine: brave
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+
+search:
+  safe_search: 0
+  formats:
+    - html
+    - json
