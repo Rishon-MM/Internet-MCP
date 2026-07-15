@@ -1,19 +1,24 @@
-use:
-  - name: general
-    engine: google
-  - name: general
-    engine: duckduckgo
-  - name: general
-    engine: bing
-  - name: general
-    engine: brave
+# SearXNG settings for Internet MCP
+# Only override what we need — SearXNG applies its own defaults for the rest.
+# See: https://docs.searxng.org/admin/settings/index.html
+
+use_default_settings: true
+
+general:
+  instance_name: "Internet MCP Search"
+  debug: false
 
 server:
   port: 8080
   bind_address: "0.0.0.0"
+  secret_key: "internet-mcp-searxng-secret-change-in-production"
+  limiter: false
+  image_proxy: false
 
 search:
   safe_search: 0
+  autocomplete: ""
+  default_lang: "en"
   formats:
     - html
     - json

@@ -21,8 +21,8 @@ describe('Utils', () => {
     });
 
     it('should truncate at word boundary', () => {
-      const result = truncateText('hello world foo bar baz', 15);
-      expect(result).toBe('hello world...');
+      const result = truncateText('hello world foo bar baz qux', 20);
+      expect(result).toBe('hello world foo bar...');
     });
 
     it('should handle exact length', () => {

@@ -40,12 +40,18 @@ export function createMcpServer(
 export async function connectStdioTransport(
   server: McpServer,
   logger: Logger,
-): Promise<void> {
+): Promise<{ close: () => Promise<void> }> {
   const transport = new StdioServerTransport();
 
   logger.info('Connecting via stdio transport');
   await server.connect(transport);
   logger.info('MCP server connected via stdio');
+
+  return {
+    close: async () => {
+      await server.close();
+    },
+  };
 }
 
 /**
@@ -56,10 +62,10 @@ export async function connectStdioTransport(
  * per-request transports, SSE streaming).
  */
 export async function connectHttpTransport(
-  server: McpServer,
+  serverFactory: () => McpServer,
   config: AppConfig,
   logger: Logger,
-): Promise<void> {
+): Promise<{ close: () => Promise<void> }> {
   const { createMcpHandler } = await import('@modelcontextprotocol/server');
   const { createServer } = await import('node:http');
 
@@ -68,15 +74,37 @@ export async function connectHttpTransport(
   // createMcpHandler returns a Web Standard Request → Response handler
   // that manages all MCP protocol internals
   const mcpHandler = createMcpHandler(
-    () => server.server,
+    () => serverFactory().server,
   );
+
+  /**
+   * CORS headers — required for browser-based MCP clients
+   * (Open WebUI, MCP Inspector, etc.) that connect cross-origin.
+   */
+  const CORS_HEADERS: Record<string, string> = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization, Mcp-Protocol-Version',
+    'Access-Control-Expose-Headers': 'Content-Type, Mcp-Protocol-Version',
+    'Access-Control-Max-Age': '86400',
+  };
 
   const httpServer = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', `http://localhost:${port}`);
 
+    // Handle CORS preflight for all endpoints
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, CORS_HEADERS);
+      res.end();
+      return;
+    }
+
     // Health check endpoint
     if (url.pathname === '/health' && req.method === 'GET') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        ...CORS_HEADERS,
+      });
       res.end(JSON.stringify({
         status: 'ok',
         server: SERVER_NAME,
@@ -113,8 +141,14 @@ export async function connectHttpTransport(
         // Let the SDK handle all MCP protocol complexity
         const webResponse = await mcpHandler.fetch(webRequest);
 
+        // Merge CORS headers with SDK response headers
+        const responseHeaders: Record<string, string> = {
+          ...Object.fromEntries(webResponse.headers.entries()),
+          ...CORS_HEADERS,
+        };
+
         // Convert Web Standard Response → Node.js ServerResponse
-        res.writeHead(webResponse.status, Object.fromEntries(webResponse.headers.entries()));
+        res.writeHead(webResponse.status, responseHeaders);
         const responseBody = await webResponse.text();
         res.end(responseBody);
       } catch (error) {
@@ -123,7 +157,10 @@ export async function connectHttpTransport(
         }, 'HTTP handler error');
 
         if (!res.headersSent) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.writeHead(500, {
+            'Content-Type': 'application/json',
+            ...CORS_HEADERS,
+          });
           res.end(JSON.stringify({ error: 'Internal server error' }));
         }
       }
@@ -131,15 +168,29 @@ export async function connectHttpTransport(
     }
 
     // 404 for everything else
-    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.writeHead(404, {
+      'Content-Type': 'application/json',
+      ...CORS_HEADERS,
+    });
     res.end(JSON.stringify({ error: 'Not found' }));
   });
 
-  httpServer.listen(port, () => {
-    logger.info({
-      port,
-      endpoint: '/mcp',
-      health: '/health',
-    }, 'MCP server listening via Streamable HTTP');
+  return new Promise((resolve) => {
+    httpServer.listen(port, () => {
+      logger.info({
+        port,
+        endpoint: '/mcp',
+        health: '/health',
+      }, 'MCP server listening via Streamable HTTP');
+
+      resolve({
+        close: async () => {
+          await mcpHandler.close();
+          await new Promise<void>((res) => {
+            httpServer.close(() => res());
+          });
+        },
+      });
+    });
   });
 }

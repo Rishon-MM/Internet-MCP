@@ -74,15 +74,21 @@ async function main(): Promise<void> {
     config,
   );
 
-  // ── 6. MCP Server ──────────────────────────────
-  const mcpServer = createMcpServer(config, logger);
-  registerTools(mcpServer, searchService, fetchService, logger);
+  // ── 6. MCP Server Factory ──────────────────────────────
+  const createConfiguredServer = () => {
+    const server = createMcpServer(config, logger);
+    registerTools(server, searchService, fetchService, logger);
+    return server;
+  };
 
   // ── 7. Connect Transport ───────────────────────
+  let transportCloser: { close: () => Promise<void> };
+
   if (config.transport.type === 'http') {
-    await connectHttpTransport(mcpServer, config, logger);
+    transportCloser = await connectHttpTransport(createConfiguredServer, config, logger);
   } else {
-    await connectStdioTransport(mcpServer, logger);
+    const mcpServer = createConfiguredServer();
+    transportCloser = await connectStdioTransport(mcpServer, logger);
   }
 
   // ── 8. Graceful Shutdown ───────────────────────
@@ -99,7 +105,7 @@ async function main(): Promise<void> {
     searchCache.destroy();
     pageCache.destroy();
 
-    await mcpServer.close();
+    await transportCloser.close();
     logger.info('Internet MCP stopped');
 
     process.exit(0);
