@@ -1,4 +1,4 @@
-import type { SearchResult } from '../../shared/types.js';
+import type { SearchResult } from '../../../shared/types.js';
 
 /**
  * Search provider interface.

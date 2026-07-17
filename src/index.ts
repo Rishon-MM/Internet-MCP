@@ -13,22 +13,32 @@
  * 3. Create cache instances
  * 4. Create providers and register them
  * 5. Create core services with injected dependencies
- * 6. Create MCP server and register tools
- * 7. Connect transport (stdio or HTTP)
- * 8. Set up graceful shutdown
+ * 6. Create connectors
+ * 7. Create MCP server and register tools
+ * 8. Connect transport (stdio or HTTP)
+ * 9. Set up graceful shutdown
  */
 
 import { loadConfig } from './shared/config.js';
 import { createLogger } from './shared/logger.js';
-import { MemoryCache } from './core/cache/memory.cache.js';
-import { HtmlExtractor } from './core/extract/html.extractor.js';
-import { SearchService } from './core/search/search.service.js';
-import { FetchService } from './core/fetch/fetch.service.js';
+import { MemoryCache } from './core/retrieval/cache/memory.cache.js';
+import { HtmlExtractor } from './core/retrieval/extract/html.extractor.js';
+import { SearchService } from './core/retrieval/search/search.service.js';
+import { FetchService } from './core/retrieval/fetch/fetch.service.js';
 import { ProviderManager } from './providers/provider.js';
 import { SearxngProvider } from './providers/searxng/searxng.provider.js';
 import { createMcpServer, connectStdioTransport, connectHttpTransport } from './mcp/server.js';
 import { registerTools } from './mcp/registry.js';
 import type { SearchResponse, PageContent } from './shared/types.js';
+
+// Connectors
+import { WeatherConnector } from './core/connectors/weather/weather.connector.js';
+import { TimeConnector } from './core/connectors/time/time.connector.js';
+import { CurrencyConnector } from './core/connectors/currency/currency.connector.js';
+import { GeocodeConnector } from './core/connectors/geocode/geocode.connector.js';
+import { CryptoConnector } from './core/connectors/crypto/crypto.connector.js';
+import { StocksConnector } from './core/connectors/stocks/stocks.connector.js';
+import { RssConnector } from './core/connectors/rss/rss.connector.js';
 
 async function main(): Promise<void> {
   // ── 1. Configuration ────────────────────────────
@@ -74,14 +84,35 @@ async function main(): Promise<void> {
     config,
   );
 
-  // ── 6. MCP Server Factory ──────────────────────────────
+  // ── 6. Connectors ──────────────────────────────
+  const weatherConnector = new WeatherConnector(logger, config);
+  const timeConnector = new TimeConnector();
+  const currencyConnector = new CurrencyConnector(logger, config);
+  const geocodeConnector = new GeocodeConnector(logger, config);
+  const cryptoConnector = new CryptoConnector(logger, config);
+  const stocksConnector = new StocksConnector(logger, config);
+  const rssConnector = new RssConnector(logger, config);
+
+  const toolServices = {
+    searchService,
+    fetchService,
+    weatherConnector,
+    timeConnector,
+    currencyConnector,
+    geocodeConnector,
+    cryptoConnector,
+    stocksConnector,
+    rssConnector,
+  };
+
+  // ── 7. MCP Server Factory ──────────────────────
   const createConfiguredServer = () => {
     const server = createMcpServer(config, logger);
-    registerTools(server, searchService, fetchService, logger);
+    registerTools(server, toolServices, logger);
     return server;
   };
 
-  // ── 7. Connect Transport ───────────────────────
+  // ── 8. Connect Transport ───────────────────────
   let transportCloser: { close: () => Promise<void> };
 
   if (config.transport.type === 'http') {
@@ -91,7 +122,7 @@ async function main(): Promise<void> {
     transportCloser = await connectStdioTransport(mcpServer, logger);
   }
 
-  // ── 8. Graceful Shutdown ───────────────────────
+  // ── 9. Graceful Shutdown ───────────────────────
   const shutdown = async (signal: string): Promise<void> => {
     logger.info({ signal }, 'Shutdown signal received');
 
@@ -117,7 +148,11 @@ async function main(): Promise<void> {
   logger.info({
     transport: config.transport.type,
     provider: activeProvider.name,
-    tools: ['search_web', 'open_url'],
+    tools: [
+      'search_web', 'open_url',
+      'get_weather', 'get_time', 'convert_currency',
+      'geocode', 'get_crypto_price', 'get_stock_price', 'read_rss',
+    ],
   }, 'Internet MCP ready');
 }
 

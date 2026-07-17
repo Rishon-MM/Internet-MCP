@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HtmlExtractor } from '../../core/extract/html.extractor.js';
+import { HtmlExtractor } from '../../core/retrieval/extract/html.extractor.js';
 
 describe('HtmlExtractor', () => {
   const extractor = new HtmlExtractor();

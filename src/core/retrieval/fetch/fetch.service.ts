@@ -1,10 +1,10 @@
-import type { Logger } from '../../shared/logger.js';
-import type { AppConfig } from '../../shared/config.js';
-import type { PageContent } from '../../shared/types.js';
+import type { Logger } from '../../../shared/logger.js';
+import type { AppConfig } from '../../../shared/config.js';
+import type { PageContent } from '../../../shared/types.js';
 import type { Cache } from '../cache/cache.js';
 import type { ContentExtractor } from '../extract/extractor.js';
-import { FetchError } from '../../shared/errors.js';
-import { elapsed, generateRequestId, isValidUrl, detectContentType } from '../../shared/utils.js';
+import { FetchError } from '../../../shared/errors.js';
+import { elapsed, generateRequestId, isValidUrl, detectContentType } from '../../../shared/utils.js';
 import { truncateMarkdown } from '../extract/markdown.js';
 
 /** User-Agent strings rotated for reliable fetching */

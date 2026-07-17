@@ -1,10 +1,10 @@
-import type { Logger } from '../../shared/logger.js';
-import type { AppConfig } from '../../shared/config.js';
-import type { SearchResponse, SearchResult } from '../../shared/types.js';
+import type { Logger } from '../../../shared/logger.js';
+import type { AppConfig } from '../../../shared/config.js';
+import type { SearchResponse, SearchResult } from '../../../shared/types.js';
 import type { Cache } from '../cache/cache.js';
 import type { SearchProvider, SearchOptions } from './search.types.js';
-import { ProviderError } from '../../shared/errors.js';
-import { elapsed, generateRequestId } from '../../shared/utils.js';
+import { ProviderError } from '../../../shared/errors.js';
+import { elapsed, generateRequestId } from '../../../shared/utils.js';
 
 /**
  * SearchService — core business logic for web search.

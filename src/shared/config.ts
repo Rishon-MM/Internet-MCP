@@ -47,6 +47,14 @@ const ConfigSchema = z.object({
   logging: z.object({
     level: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']),
   }),
+
+  /** Connector configuration */
+  connectors: z.object({
+    userAgent: z.string().min(1),
+    fetchTimeout: z.number().int().positive(),
+    cacheTtl: z.number().int().nonnegative(),
+    coingeckoApiKey: z.string().optional(),
+  }),
 });
 
 export type AppConfig = z.infer<typeof ConfigSchema>;
@@ -85,6 +93,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     },
     logging: {
       level: env['LOG_LEVEL'] ?? 'info',
+    },
+    connectors: {
+      userAgent: env['CONNECTOR_USER_AGENT'] ?? 'internet-mcp/0.1.0',
+      fetchTimeout: Number(env['CONNECTOR_FETCH_TIMEOUT'] ?? '10000'),
+      cacheTtl: Number(env['CONNECTOR_CACHE_TTL'] ?? '300'),
+      coingeckoApiKey: env['COINGECKO_API_KEY'] || undefined,
     },
   };
 

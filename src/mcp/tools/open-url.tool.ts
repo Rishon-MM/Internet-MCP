@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
 import type { McpServer } from '@modelcontextprotocol/server';
-import type { FetchService } from '../../core/fetch/fetch.service.js';
+import type { FetchService } from '../../core/retrieval/fetch/fetch.service.js';
 import type { Logger } from '../../shared/logger.js';
 
 /**

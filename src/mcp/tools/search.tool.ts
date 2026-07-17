@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
 import type { McpServer } from '@modelcontextprotocol/server';
-import type { SearchService } from '../../core/search/search.service.js';
+import type { SearchService } from '../../core/retrieval/search/search.service.js';
 import type { Logger } from '../../shared/logger.js';
 
 /**

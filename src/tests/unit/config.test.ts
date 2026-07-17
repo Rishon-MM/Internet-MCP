@@ -17,6 +17,10 @@ describe('Config', () => {
       expect(config.transport.type).toBe('stdio');
       expect(config.transport.httpPort).toBe(3000);
       expect(config.logging.level).toBe('info');
+      expect(config.connectors.userAgent).toBe('internet-mcp/0.1.0');
+      expect(config.connectors.fetchTimeout).toBe(10000);
+      expect(config.connectors.cacheTtl).toBe(300);
+      expect(config.connectors.coingeckoApiKey).toBeUndefined();
     });
 
     it('should load from environment variables', () => {

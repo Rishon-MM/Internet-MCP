@@ -133,3 +133,24 @@ export class ValidationError extends AppError {
     });
   }
 }
+
+/** Errors from data connectors (weather, currency, crypto, etc.) */
+export class ConnectorError extends AppError {
+  /** Name of the connector that failed */
+  readonly connector: string;
+
+  constructor(params: {
+    connector: string;
+    message: string;
+    code?: string;
+    cause?: Error;
+  }) {
+    super({
+      code: params.code ?? 'CONNECTOR_ERROR',
+      message: `[${params.connector}] ${params.message}`,
+      statusCode: 502,
+      cause: params.cause,
+    });
+    this.connector = params.connector;
+  }
+}

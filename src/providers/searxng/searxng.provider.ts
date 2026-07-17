@@ -1,4 +1,4 @@
-import type { SearchProvider, SearchOptions } from '../../core/search/search.types.js';
+import type { SearchProvider, SearchOptions } from '../../core/retrieval/search/search.types.js';
 import type { SearchResult } from '../../shared/types.js';
 import type { AppConfig } from '../../shared/config.js';
 import type { Logger } from '../../shared/logger.js';
