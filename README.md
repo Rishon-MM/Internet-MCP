@@ -8,12 +8,26 @@ Unlike typical MCP servers that expose many low-level tools, Internet MCP focuse
 
 ## Features
 
-- 🔍 **`search_web`** — Search the internet for current information
-- 🌐 **`open_url`** — Fetch any webpage and return clean Markdown
-- ⚡ **Smart caching** — Per-content-type TTLs (search, pages, docs, PDFs)
-- 🔌 **Pluggable providers** — SearXNG now, Brave/Tavily later
-- 📡 **Dual transport** — Stdio (local) + Streamable HTTP (remote)
-- 🏗️ **Production architecture** — DI, typed errors, structured logging
+### Tools (11)
+
+-  **`search_web`** — Search the internet for current information
+-  **`open_url`** — Fetch any webpage and return clean Markdown
+-  **`get_weather`** — Current weather for any location
+-  **`get_time`** — Current time in any IANA timezone
+-  **`convert_currency`** — Real-time currency conversion
+-  **`geocode`** — Forward and reverse geocoding
+-  **`get_current_location`** — IP-based geolocation (city, country, coordinates)
+-  **`get_crypto_price`** — Cryptocurrency prices
+-  **`get_stock_price`** — Stock market prices
+-  **`read_rss`** — Read RSS/Atom feeds
+-  **`wikipedia`** — Search and read Wikipedia articles
+
+### Infrastructure
+
+-  **Smart caching** — Per-content-type TTLs (search, pages, docs, PDFs)
+-  **Pluggable providers** — SearXNG now, Brave/Tavily later
+-  **Dual transport** — Stdio (local) + Streamable HTTP (remote)
+-  **Production architecture** — DI, typed errors, structured logging
 
 ## Quick Start
 
@@ -100,6 +114,102 @@ Fetch a webpage and return clean Markdown.
 
 Returns the page content as clean Markdown with navigation, ads, and scripts stripped.
 
+### `get_weather`
+
+Get current weather conditions for any location.
+
+```json
+{
+  "location": "London"
+}
+```
+
+### `get_time`
+
+Get the current time and date in any IANA timezone.
+
+```json
+{
+  "timezone": "America/New_York"
+}
+```
+
+### `convert_currency`
+
+Convert between currencies at real-time exchange rates.
+
+```json
+{
+  "from": "USD",
+  "to": "EUR",
+  "amount": 100
+}
+```
+
+### `geocode`
+
+Forward geocoding (address → coordinates) or reverse geocoding (coordinates → address).
+
+```json
+{
+  "query": "Eiffel Tower"
+}
+```
+
+### `get_current_location`
+
+Get the current geographic location. No input required.
+
+```json
+{}
+```
+
+Uses a multi-strategy approach:
+1. **Windows Location Services** (GPS, Wi-Fi, Bluetooth) — high accuracy, includes precision in meters
+2. **IP Geolocation** ([ipwho.is](https://ipwho.is)) — automatic fallback when Windows location is unavailable
+
+The result includes a `source` field (`"windows"` or `"ip"`) so the LLM knows the reliability of the data. When Windows coordinates are obtained, they are reverse-geocoded via [Nominatim](https://nominatim.openstreetmap.org) for a human-readable address.
+
+### `get_crypto_price`
+
+Get current cryptocurrency prices.
+
+```json
+{
+  "coin": "bitcoin"
+}
+```
+
+### `get_stock_price`
+
+Get current stock market prices.
+
+```json
+{
+  "symbol": "AAPL"
+}
+```
+
+### `read_rss`
+
+Read and parse RSS/Atom feeds.
+
+```json
+{
+  "url": "https://hnrss.org/frontpage"
+}
+```
+
+### `wikipedia`
+
+Search and read Wikipedia articles.
+
+```json
+{
+  "query": "Model Context Protocol"
+}
+```
+
 ## Architecture
 
 ```
@@ -108,12 +218,23 @@ src/
 ├── mcp/                  # MCP protocol layer (thin)
 │   ├── server.ts         # Server + transport setup
 │   ├── registry.ts       # Tool registration
-│   └── tools/            # Tool definitions
+│   └── tools/            # Tool definitions (11 tools)
 ├── core/                 # Business logic
-│   ├── search/           # Search service
-│   ├── fetch/            # Fetch + extraction service
-│   ├── extract/          # HTML → Markdown extractors
-│   └── cache/            # In-memory LRU cache
+│   ├── retrieval/        # Search + fetch services
+│   │   ├── search/       # Search service
+│   │   ├── fetch/        # Fetch + extraction service
+│   │   ├── extract/      # HTML → Markdown extractors
+│   │   └── cache/        # In-memory LRU cache
+│   └── connectors/       # External data connectors
+│       ├── weather/      # Open-Meteo
+│       ├── time/         # Node.js Intl API
+│       ├── currency/     # Exchange rates
+│       ├── geocode/      # Nominatim (OpenStreetMap)
+│       ├── location/     # ipwho.is (IP geolocation)
+│       ├── crypto/       # CoinGecko
+│       ├── stocks/       # Stock prices
+│       ├── rss/          # RSS/Atom feeds
+│       └── wikipedia/    # Wikipedia API
 ├── providers/            # External service adapters
 │   └── searxng/          # SearXNG provider
 └── shared/               # Config, logger, errors, types

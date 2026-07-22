@@ -1,5 +1,5 @@
 services:
-  # ── Internet MCP Server ──────────────────────
+  # ── Internet MCP Server ──────────────────
   internet-mcp:
     build: .
     container_name: internet-mcp
@@ -22,7 +22,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # ── SearXNG ──────────────────────────────────
+  # ── SearXNG ─────────────────────────────────
   searxng:
     image: searxng/searxng:latest
     container_name: searxng

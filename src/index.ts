@@ -39,6 +39,8 @@ import { GeocodeConnector } from './core/connectors/geocode/geocode.connector.js
 import { CryptoConnector } from './core/connectors/crypto/crypto.connector.js';
 import { StocksConnector } from './core/connectors/stocks/stocks.connector.js';
 import { RssConnector } from './core/connectors/rss/rss.connector.js';
+import { WikipediaConnector } from './core/connectors/wikipedia/wikipedia.connector.js';
+import { LocationConnector } from './core/connectors/location/location.connector.js';
 
 async function main(): Promise<void> {
   // ── 1. Configuration ────────────────────────────
@@ -92,6 +94,8 @@ async function main(): Promise<void> {
   const cryptoConnector = new CryptoConnector(logger, config);
   const stocksConnector = new StocksConnector(logger, config);
   const rssConnector = new RssConnector(logger, config);
+  const wikipediaConnector = new WikipediaConnector(logger, config);
+  const locationConnector = new LocationConnector(logger, config);
 
   const toolServices = {
     searchService,
@@ -103,6 +107,8 @@ async function main(): Promise<void> {
     cryptoConnector,
     stocksConnector,
     rssConnector,
+    wikipediaConnector,
+    locationConnector,
   };
 
   // ── 7. MCP Server Factory ──────────────────────
@@ -151,7 +157,8 @@ async function main(): Promise<void> {
     tools: [
       'search_web', 'open_url',
       'get_weather', 'get_time', 'convert_currency',
-      'geocode', 'get_crypto_price', 'get_stock_price', 'read_rss',
+      'geocode', 'get_crypto_price', 'get_stock_price', 'read_rss', 'wikipedia',
+      'get_current_location',
     ],
   }, 'Internet MCP ready');
 }

@@ -9,6 +9,8 @@ import type { GeocodeConnector } from '../core/connectors/geocode/geocode.connec
 import type { CryptoConnector } from '../core/connectors/crypto/crypto.connector.js';
 import type { StocksConnector } from '../core/connectors/stocks/stocks.connector.js';
 import type { RssConnector } from '../core/connectors/rss/rss.connector.js';
+import type { WikipediaConnector } from '../core/connectors/wikipedia/wikipedia.connector.js';
+import type { LocationConnector } from '../core/connectors/location/location.connector.js';
 import type { Logger } from '../shared/logger.js';
 import { registerSearchTool } from './tools/search.tool.js';
 import { registerOpenUrlTool } from './tools/open-url.tool.js';
@@ -19,6 +21,8 @@ import { registerGeocodeTool } from './tools/geocode.tool.js';
 import { registerCryptoTool } from './tools/crypto.tool.js';
 import { registerStocksTool } from './tools/stocks.tool.js';
 import { registerRssTool } from './tools/rss.tool.js';
+import { registerWikipediaTool } from './tools/wikipedia.tool.js';
+import { registerLocationTool } from './tools/location.tool.js';
 
 /**
  * Services container — all services needed by MCP tools.
@@ -33,6 +37,8 @@ export interface ToolServices {
   readonly cryptoConnector: CryptoConnector;
   readonly stocksConnector: StocksConnector;
   readonly rssConnector: RssConnector;
+  readonly wikipediaConnector: WikipediaConnector;
+  readonly locationConnector: LocationConnector;
 }
 
 /**
@@ -58,6 +64,8 @@ export function registerTools(
   registerCryptoTool(server, services.cryptoConnector, logger);
   registerStocksTool(server, services.stocksConnector, logger);
   registerRssTool(server, services.rssConnector, logger);
+  registerWikipediaTool(server, services.wikipediaConnector, logger);
+  registerLocationTool(server, services.locationConnector, logger);
 
   logger.info('All MCP tools registered');
 }

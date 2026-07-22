@@ -15,7 +15,7 @@ RUN npm run build
 # Prune dev dependencies
 RUN npm prune --production
 
-# ── Runtime stage ────────────────────────────
+# ── Runtime stage ───────────────────
 FROM node:20-alpine AS runtime
 
 # Security: run as non-root user
