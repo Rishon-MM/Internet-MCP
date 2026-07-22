@@ -280,13 +280,18 @@ Configure as an MCP server with stdio transport pointing to `dist/index.js`.
 
 ## Contributing
 
-See [docs/architecture.md](docs/architecture.md) for architectural decisions and extension guidelines.
+See extension guidelines.
 
 To add a new search provider:
 
 1. Implement the `SearchProvider` interface from `src/core/search/search.types.ts`
 2. Register it in `src/providers/provider.ts`
 3. Add configuration to `src/shared/config.ts`
+
+### Tool Guidelines
+**Important:** When adding new tools, follow this core principle:
+- The **LLM** is responsible for reasoning, formatting, and analyzing data.
+- The **Tool** (Retrieval engine / Connector) is responsible for executing the request and returning the **Relevant, Filtered data** back. 
 
 No business logic changes required.
 
