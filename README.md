@@ -36,7 +36,16 @@ Unlike typical MCP servers that expose many low-level tools, Internet MCP focuse
 - Node.js 20+
 - A [SearXNG](https://docs.searxng.org/) instance (self-hosted or public)
 
-### Install
+### Run via Docker (Standalone / No Cloning Required)
+
+If you have Docker installed and don't want to clone the repository or install Node.js dependencies, you can start the server immediately using pre-built images:
+
+```bash
+curl -O https://raw.githubusercontent.com/your-username/internet-mcp/main/docker-compose.prod.yml
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### Install (Local Development / From Source)
 
 ```bash
 git clone https://github.com/your-username/internet-mcp.git
@@ -246,9 +255,30 @@ See [docs/architecture.md](docs/architecture.md) for the full architecture docum
 
 ## Docker
 
+We provide two Docker Compose configurations depending on how you want to run the server:
+
+### 1. Quick Start (Standalone / No Cloning Required)
+
+If you don't want to clone the entire repository and just want to run Internet MCP immediately, download or save [`docker-compose.prod.yml`](docker-compose.prod.yml) which uses pre-built DockerHub images with bundled configuration:
+
 ```bash
-# Start Internet MCP + SearXNG
-docker compose up
+# Download the standalone compose file
+curl -O https://raw.githubusercontent.com/Rishon-MM/internet-mcp/main/docker-compose.prod.yml
+
+# Start the server and SearXNG in the background
+docker compose -f docker-compose.prod.yml up -d
+
+# Internet MCP: http://localhost:3000/mcp
+# SearXNG:      http://localhost:8080
+```
+
+### 2. Local Build (From Source)
+
+If you have cloned the repository and want to build the Docker image locally from source:
+
+```bash
+# Build and start Internet MCP + SearXNG
+docker compose up -d
 
 # Internet MCP: http://localhost:3000/mcp
 # SearXNG:      http://localhost:8080

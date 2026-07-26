@@ -1,0 +1,36 @@
+services:
+  internet-mcp:
+    image: rishonmm/internet-mcp:latest
+    container_name: internet-mcp
+    ports:
+      - "3000:3000"
+    environment:
+      - TRANSPORT=http
+      - HTTP_PORT=3000
+      - SEARCH_PROVIDER=searxng
+      - SEARXNG_BASE_URL=http://searxng:8080
+      - SEARXNG_TIMEOUT=5000
+      - SEARXNG_SAFE_SEARCH=0
+      - SEARCH_CACHE_TTL=300
+      - PAGE_CACHE_TTL=86400
+      - DOC_CACHE_TTL=86400
+      - PDF_CACHE_TTL=2592000
+      - LOG_LEVEL=info
+    depends_on:
+      searxng:
+        condition: service_healthy
+    restart: unless-stopped
+
+  searxng:
+    image: rishonmm/searxng-config:latest
+    container_name: searxng
+    ports:
+      - "8080:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
