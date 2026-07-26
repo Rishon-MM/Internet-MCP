@@ -41,9 +41,19 @@ Unlike typical MCP servers that expose many low-level tools, Internet MCP focuse
 If you have Docker installed and don't want to clone the repository or install Node.js dependencies, you can start the server immediately using pre-built images:
 
 ```bash
+# Linux / macOS / Git Bash
 curl -O https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml
+
+# Windows (PowerShell)
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml" -OutFile "docker-compose.prod.yml"
+
+# Start the server and SearXNG
 docker compose -f docker-compose.prod.yml up -d
+
+# Stop the server and SearXNG
+docker compose -f docker-compose.prod.yml down
 ```
+
 
 ### Install (Local Development / From Source)
 
@@ -262,8 +272,11 @@ We provide two Docker Compose configurations depending on how you want to run th
 If you don't want to clone the entire repository and just want to run Internet MCP immediately, download or save [`docker-compose.prod.yml`](docker-compose.prod.yml) which uses pre-built DockerHub images with bundled configuration:
 
 ```bash
-# Download the standalone compose file
+# Download standalone compose file (Linux / macOS / Git Bash)
 curl -O https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml
+
+# Download standalone compose file (Windows PowerShell)
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml" -OutFile "docker-compose.prod.yml"
 
 # Start the server and SearXNG in the background
 docker compose -f docker-compose.prod.yml up -d
