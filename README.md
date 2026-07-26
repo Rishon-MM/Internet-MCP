@@ -41,14 +41,14 @@ Unlike typical MCP servers that expose many low-level tools, Internet MCP focuse
 If you have Docker installed and don't want to clone the repository or install Node.js dependencies, you can start the server immediately using pre-built images:
 
 ```bash
-curl -O https://raw.githubusercontent.com/your-username/internet-mcp/main/docker-compose.prod.yml
+curl -O https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml
 docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### Install (Local Development / From Source)
 
 ```bash
-git clone https://github.com/your-username/internet-mcp.git
+git clone https://github.com/Rishon-MM/Internet-MCP.git
 cd internet-mcp
 npm install
 cp .env.example .env
@@ -263,7 +263,7 @@ If you don't want to clone the entire repository and just want to run Internet M
 
 ```bash
 # Download the standalone compose file
-curl -O https://raw.githubusercontent.com/Rishon-MM/internet-mcp/main/docker-compose.prod.yml
+curl -O https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml
 
 # Start the server and SearXNG in the background
 docker compose -f docker-compose.prod.yml up -d
