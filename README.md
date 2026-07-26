@@ -265,27 +265,7 @@ See [docs/architecture.md](docs/architecture.md) for the full architecture docum
 
 ## Docker
 
-We provide two Docker Compose configurations depending on how you want to run the server:
-
-### 1. Quick Start (Standalone / No Cloning Required)
-
-If you don't want to clone the entire repository and just want to run Internet MCP immediately, download or save [`docker-compose.prod.yml`](docker-compose.prod.yml) which uses pre-built DockerHub images with bundled configuration:
-
-```bash
-# Download standalone compose file (Linux / macOS / Git Bash)
-curl -O https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml
-
-# Download standalone compose file (Windows PowerShell)
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Rishon-MM/Internet-MCP/main/docker-compose.prod.yml" -OutFile "docker-compose.prod.yml"
-
-# Start the server and SearXNG in the background
-docker compose -f docker-compose.prod.yml up -d
-
-# Internet MCP: http://localhost:3000/mcp
-# SearXNG:      http://localhost:8080
-```
-
-### 2. Local Build (From Source)
+### 1. Local Build (From Source)
 
 If you have cloned the repository and want to build the Docker image locally from source:
 
@@ -334,7 +314,7 @@ To add a new search provider:
 ### Tool Guidelines
 **Important:** When adding new tools, follow this core principle:
 - The **LLM** is responsible for reasoning, formatting, and analyzing data.
-- The **Tool** (Retrieval engine / Connector) is responsible for executing the request and returning the **Relevant, Filtered data** back. 
+- The **Tool** (Retrieval engine / Connector) is responsible for executing the request and returning **Relevant**, **Unfiltered**, **Raw** data back. 
 
 No business logic changes required.
 
