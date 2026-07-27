@@ -318,5 +318,4 @@ To add a new search provider:
 - The **Tool** (Retrieval engine / Connector) is responsible for executing the request and returning **Relevant**, **Unfiltered**, **Raw** data back. 
 
 ## License
-
-MIT
+This project is open-source and available under the [MIT License](LICENSE).
