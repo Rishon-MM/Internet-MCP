@@ -317,8 +317,6 @@ To add a new search provider:
 - The **LLM** is responsible for reasoning, formatting, and analyzing data.
 - The **Tool** (Retrieval engine / Connector) is responsible for executing the request and returning **Relevant**, **Unfiltered**, **Raw** data back. 
 
-No business logic changes required.
-
 ## License
 
 MIT
