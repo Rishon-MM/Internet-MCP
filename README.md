@@ -1,10 +1,11 @@
 # Internet MCP
 
-A production-grade Internet access server for local LLMs using the [Model Context Protocol](https://modelcontextprotocol.io) (MCP).
+A production-grade MCP server that brings real-world capabilities to local LLMs.
 
 Internet MCP enables local AI models such as **Qwen**, **Llama**, **DeepSeek**, **Gemma**, and **Mistral** to access reliable, up-to-date information from the web through a simple, intelligent, and model-friendly interface.
 
 Unlike typical MCP servers that expose many low-level tools, Internet MCP focuses on providing a **small set of high-quality tools** while handling all retrieval complexity internally. The LLM expresses **what it wants**, and the server decides **how to retrieve it**.
+![Internet MCP](assets/internet_mcp.png)
 
 ## Features
 
