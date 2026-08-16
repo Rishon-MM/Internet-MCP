@@ -52,6 +52,8 @@ export interface PageContent {
   readonly cached: boolean;
   /** Total operation latency in milliseconds */
   readonly latencyMs: number;
+  /** Whether this content was rendered via a headless browser */
+  readonly renderedWithBrowser?: boolean;
 }
 
 /** Content type classification for cache TTL selection */

@@ -2,7 +2,8 @@ import type { Logger } from '../../../shared/logger.js';
 import type { AppConfig } from '../../../shared/config.js';
 import type { PageContent } from '../../../shared/types.js';
 import type { Cache } from '../cache/cache.js';
-import type { ContentExtractor } from '../extract/extractor.js';
+import type { ContentExtractor, ExtractionResult } from '../extract/extractor.js';
+import type { BrowserRenderer } from './browser.renderer.js';
 import { FetchError } from '../../../shared/errors.js';
 import { elapsed, generateRequestId, isValidUrl, detectContentType } from '../../../shared/utils.js';
 import { truncateMarkdown } from '../extract/markdown.js';
@@ -23,8 +24,10 @@ const USER_AGENTS = [
  * 3. Fetch page with timeout and User-Agent rotation
  * 4. Detect content type
  * 5. Extract clean Markdown via appropriate extractor
- * 6. Cache with content-type-specific TTL
- * 7. Return PageContent
+ * 6. If word count is below threshold → retry with headless browser
+ * 7. Truncate if needed (keep LLM-friendly)
+ * 8. Cache with content-type-specific TTL
+ * 9. Return PageContent
  *
  * All dependencies are injected via constructor.
  */
@@ -34,6 +37,7 @@ export class FetchService {
     private readonly cache: Cache<PageContent>,
     private readonly logger: Logger,
     private readonly config: AppConfig,
+    private readonly browserRenderer?: BrowserRenderer | null,
   ) {}
 
   /**
@@ -141,9 +145,24 @@ export class FetchService {
       });
     }
 
-    const extracted = this.extractor.extract(html, url);
+    let extracted = this.extractor.extract(html, url);
+    let renderedWithBrowser = false;
 
-    // 7. Truncate if needed (keep LLM-friendly)
+    // 7. Browser fallback — if content is thin, retry with headless browser
+    if (this.shouldRetryWithBrowser(extracted)) {
+      reqLogger.info({
+        plainWordCount: extracted.wordCount,
+        threshold: this.config.fetch.browserMinWordCount,
+      }, 'Content below threshold — attempting browser render');
+
+      const browserResult = await this.tryBrowserRender(url, extracted, reqLogger);
+      if (browserResult) {
+        extracted = browserResult;
+        renderedWithBrowser = true;
+      }
+    }
+
+    // 8. Truncate if needed (keep LLM-friendly)
     const markdown = truncateMarkdown(extracted.markdown, this.config.fetch.maxSize);
 
     const latencyMs = elapsed(startTime);
@@ -156,9 +175,10 @@ export class FetchService {
       wordCount: extracted.wordCount,
       cached: false,
       latencyMs,
+      renderedWithBrowser,
     };
 
-    // 8. Cache with content-type-specific TTL
+    // 9. Cache with content-type-specific TTL
     const ttl = this.getTtlForContentType(contentType);
     this.cache.set(cacheKey, pageContent, ttl);
 
@@ -167,11 +187,66 @@ export class FetchService {
       contentType,
       wordCount: extracted.wordCount,
       titleExtracted: extracted.title,
+      renderedWithBrowser,
       latencyMs,
     }, 'Fetch completed');
 
     return pageContent;
   }
+
+  // ── Browser Fallback ──────────────────────────
+
+  /**
+   * Determines whether the extraction result is thin enough
+   * to warrant a browser retry.
+   */
+  private shouldRetryWithBrowser(extracted: ExtractionResult): boolean {
+    if (!this.config.fetch.browserEnabled) return false;
+    if (!this.browserRenderer) return false;
+    return extracted.wordCount < this.config.fetch.browserMinWordCount;
+  }
+
+  /**
+   * Attempts to render the URL in a headless browser and re-extract.
+   *
+   * Only adopts the browser result if it produced MORE content
+   * than the plain fetch. On any failure, returns null (keep original).
+   */
+  private async tryBrowserRender(
+    url: string,
+    plainResult: ExtractionResult,
+    reqLogger: Logger,
+  ): Promise<ExtractionResult | null> {
+    try {
+      const renderedHtml = await this.browserRenderer!.render(url);
+      const renderedExtracted = this.extractor.extract(renderedHtml, url);
+
+      if (renderedExtracted.wordCount > plainResult.wordCount) {
+        reqLogger.info({
+          plainWordCount: plainResult.wordCount,
+          browserWordCount: renderedExtracted.wordCount,
+          wordCountDelta: renderedExtracted.wordCount - plainResult.wordCount,
+        }, 'Browser render produced more content — using rendered result');
+
+        return renderedExtracted;
+      }
+
+      reqLogger.debug({
+        plainWordCount: plainResult.wordCount,
+        browserWordCount: renderedExtracted.wordCount,
+      }, 'Browser render did not improve content — keeping plain result');
+
+      return null;
+    } catch (error) {
+      reqLogger.warn({
+        error: error instanceof Error ? error.message : String(error),
+      }, 'Browser render failed — falling back to plain fetch result');
+
+      return null;
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────
 
   /**
    * Reads response body with a size limit to prevent memory issues.

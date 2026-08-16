@@ -71,7 +71,13 @@ function formatPageContent(page: {
   wordCount: number;
   cached: boolean;
   latencyMs: number;
+  renderedWithBrowser?: boolean;
 }): string {
+  const flags: string[] = [];
+  if (page.cached) flags.push('cached');
+  if (page.renderedWithBrowser) flags.push('browser-rendered');
+  const suffix = flags.length > 0 ? `, ${flags.join(', ')}` : '';
+
   const lines: string[] = [
     `# ${page.title}`,
     `**Source:** ${page.url}`,
@@ -79,7 +85,7 @@ function formatPageContent(page: {
     page.markdown,
     '',
     '---',
-    `*${page.wordCount} words (${page.latencyMs}ms${page.cached ? ', cached' : ''})*`,
+    `*${page.wordCount} words (${page.latencyMs}ms${suffix})*`,
   ];
 
   return lines.join('\n');

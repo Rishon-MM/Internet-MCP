@@ -12,7 +12,7 @@ Unlike typical MCP servers that expose many low-level tools, Internet MCP focuse
 ### Tools (11)
 
 -  **`search_web`** — Search the internet for current information
--  **`open_url`** — Fetch any webpage and return clean Markdown
+-  **`open_url`** — Fetch any webpage and return clean Markdown (with headless browser fallback for JS-rendered pages)
 -  **`get_weather`** — Current weather for any location
 -  **`get_time`** — Current time in any IANA timezone
 -  **`convert_currency`** — Real-time currency conversion
@@ -26,6 +26,7 @@ Unlike typical MCP servers that expose many low-level tools, Internet MCP focuse
 ### Infrastructure
 
 -  **Smart caching** — Per-content-type TTLs (search, pages, docs, PDFs)
+-  **Headless browser fallback** — Automatic Playwright/Chromium retry for JS-rendered pages
 -  **Pluggable providers** — SearXNG now, Brave/Tavily later
 -  **Dual transport** — Stdio (local) + Streamable HTTP (remote)
 -  **Production architecture** — DI, typed errors, structured logging
@@ -106,6 +107,9 @@ All configuration via environment variables. See [`.env.example`](.env.example) 
 | `PDF_CACHE_TTL` | `2592000` | PDF cache TTL (seconds) |
 | `TRANSPORT` | `stdio` | Transport type: `stdio` or `http` |
 | `HTTP_PORT` | `3000` | HTTP server port |
+| `BROWSER_ENABLED` | `true` | Enable headless browser fallback for JS-rendered pages |
+| `BROWSER_MIN_WORD_COUNT` | `50` | Word count threshold to trigger browser fallback |
+| `BROWSER_TIMEOUT` | `30000` | Browser render timeout (ms) |
 | `LOG_LEVEL` | `info` | Log level |
 
 ## Tools
@@ -133,6 +137,13 @@ Fetch a webpage and return clean Markdown.
 ```
 
 Returns the page content as clean Markdown with navigation, ads, and scripts stripped.
+
+**Headless browser fallback:** If the page returns fewer than 50 words (typical of JS-rendered SPAs), the server automatically retries with a headless Chromium browser via Playwright. The result includes a `(browser-rendered)` tag when this happens. If Playwright is not installed, the plain fetch result is returned — the fallback is best-effort, never a hard dependency.
+
+To enable browser rendering locally:
+```bash
+npx playwright install chromium
+```
 
 ### `get_weather`
 

@@ -41,6 +41,9 @@ const ConfigSchema = z.object({
   fetch: z.object({
     timeout: z.number().int().positive(),
     maxSize: z.number().int().positive(),
+    browserEnabled: z.boolean(),
+    browserMinWordCount: z.number().int().nonnegative(),
+    browserTimeout: z.number().int().positive(),
   }),
 
   /** Logging configuration */
@@ -90,6 +93,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     fetch: {
       timeout: Number(env['FETCH_TIMEOUT'] ?? '15000'),
       maxSize: Number(env['FETCH_MAX_SIZE'] ?? '5242880'),
+      browserEnabled: (env['BROWSER_ENABLED'] ?? 'true') === 'true',
+      browserMinWordCount: Number(env['BROWSER_MIN_WORD_COUNT'] ?? '50'),
+      browserTimeout: Number(env['BROWSER_TIMEOUT'] ?? '30000'),
     },
     logging: {
       level: env['LOG_LEVEL'] ?? 'info',

@@ -25,6 +25,7 @@ import { MemoryCache } from './core/retrieval/cache/memory.cache.js';
 import { HtmlExtractor } from './core/retrieval/extract/html.extractor.js';
 import { SearchService } from './core/retrieval/search/search.service.js';
 import { FetchService } from './core/retrieval/fetch/fetch.service.js';
+import { BrowserRenderer } from './core/retrieval/fetch/browser.renderer.js';
 import { ProviderManager } from './providers/provider.js';
 import { SearxngProvider } from './providers/searxng/searxng.provider.js';
 import { createMcpServer, connectStdioTransport, connectHttpTransport } from './mcp/server.js';
@@ -72,6 +73,17 @@ async function main(): Promise<void> {
   // ── 5. Core Services ────────────────────────────
   const extractor = new HtmlExtractor();
 
+  // Browser renderer — lazy, optional, best-effort
+  let browserRenderer: BrowserRenderer | null = null;
+  if (config.fetch.browserEnabled && await BrowserRenderer.isAvailable()) {
+    browserRenderer = new BrowserRenderer(logger, config.fetch.browserTimeout);
+    logger.info('Browser rendering enabled (Playwright available)');
+  } else if (config.fetch.browserEnabled) {
+    logger.info('Browser rendering enabled but Playwright not installed — browser fallback disabled');
+  } else {
+    logger.info('Browser rendering disabled via config');
+  }
+
   const searchService = new SearchService(
     activeProvider,
     searchCache,
@@ -84,6 +96,7 @@ async function main(): Promise<void> {
     pageCache,
     logger,
     config,
+    browserRenderer,
   );
 
   // ── 6. Connectors ──────────────────────────────
@@ -141,6 +154,11 @@ async function main(): Promise<void> {
     // Cleanup
     searchCache.destroy();
     pageCache.destroy();
+
+    // Close browser renderer if active
+    if (browserRenderer) {
+      await browserRenderer.close();
+    }
 
     await transportCloser.close();
     logger.info('Internet MCP stopped');
