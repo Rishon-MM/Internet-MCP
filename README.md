@@ -271,7 +271,7 @@ src/
 
 **Key design principle:** The MCP layer is a thin shell. All business logic lives in `core/`. Providers are pluggable behind a single interface.
 
-See [docs/architecture.md](docs/architecture.md) for the full architecture documentation.
+
 
 ## Docker
 
